@@ -1,47 +1,36 @@
-import { useState, createContext, useEffect } from 'react'
+import { useState, createContext, useEffect, useCallback } from 'react'
 import './App.css'
 import FlippableCard from "./FlippableCard";
-import smiley from "../public/smiley.png";
-import {shuffle} from "./utils"
+import back from "../public/back.jpg";
+import {shuffle, randomBetween} from "./utils"
 
 export const AppContext = createContext();
 
 function App() {
-  const [pairs, setPairs] = useState(2);
-  const columnas = (pairs > 3) ? Math.round(pairs/2) : pairs;
+  const [paresTotales, setParesTotales] = useState(6);
+  const columnas = (paresTotales > 3) ? Math.round(paresTotales/2) : paresTotales;
   const [newGame, setNewGame] = useState(true);
-  const [pares, setPares] = useState(0);
-  const [volteadas, setVolteadas] = useState([]);
-  const [cards, setCards] = useState([]);
+  const [encontrados, setEncontrados] = useState(0); //Pares encontrados
+  const [volteadas, setVolteadas] = useState([]); //Las cartas volteadas en el momento
   const [unflip, setUnflip] = useState(false);
-
-  useEffect(() => {
+ 
+  const generaCartas = useCallback((pares) => {
     const newCards = [];
-    let j = 1;
-    for (let i = 1; i <= (pairs * 2); i++) {
+    let j = randomBetween(1, 25-pares);// 25 es el numero de imagenes disponibles
+    for (let i = 1; i <= (pares * 2); i++) {
       newCards.push({
         id: i,
         front: `../public/${j}.jpg`,
-        back: smiley,
         flippable: true,
       });
         if (i % 2 === 0) {
             j++;
         }
     }
-    setCards(shuffle(newCards));
-  }, [pairs]);
-  
-  useEffect(() => {
-    if(pares === pairs){
-      setTimeout(() => {
-        alert('Ganaste!');
-        
-      }, 500);
-      setNewGame(true);
-    }
-  }, [pares, pairs]);
+    return(shuffle(newCards));
+  }, [newGame]);
 
+  const [cards, setCards] = useState(generaCartas(paresTotales));
 
   const reportClick = (key, front) => {
     setUnflip(false);
@@ -61,7 +50,7 @@ function App() {
   const verificaPar = (array) => {
     if(array.length === 2){
       if(array[0].front === array[1].front){
-        setPares(pares+1);
+        setEncontrados(encontrados+1);
         freezeCards([array[0].key, array[1].key]);
         setVolteadas([]);
       }
@@ -70,39 +59,47 @@ function App() {
           setUnflip(true);
           setVolteadas([]);
         }, 1000);
-
       }
     }
   }
 
-  
   //cardIds: array de ids de las cartas que se deben congelar
   function freezeCards(cardIds) {
     setCards((cards) => {
       return cards.map((card) => {
-        return {
-          ...card,
-          flippable: !cardIds.includes(card.id),
-        };
+        if(cardIds.includes(card.id)) {
+          return {
+            ...card,
+            flippable: false,
+          };
+        } else {
+          return card;
+        }
       });
     });
+  }
+
+  const nuevoJuego = (pares) => {
+    setParesTotales(Number(pares));
+    setNewGame(true);
+    setEncontrados(0);
+    setVolteadas([]);
+    setCards(generaCartas(pares));
   }
 
   return (
     <AppContext.Provider value={[unflip, reportClick]}>
       <div className="sizeSelector">
-        <label htmlFor="pairs">Memorama de </label>
-        <input id="pairs" type="number" min='2' max='16' size='5' value={pairs} onChange={(e) => {
-          setPairs(e.target.value);
-          setNewGame(true);
-        }} /> pares
+        <label htmlFor="paresTotales">Memorama de </label>
+        <input id="paresTotales" type="number" min='2' max='16' size='5' value={paresTotales} onChange={(e) => nuevoJuego(e.target.value)} /> pares
       </div>
-      <div className='marcador'>Llevas {pares} par{pares!=1 ? 'es' : ''} </div>
-      <div className="ResizableGrid" key={pairs} style={{gridTemplateColumns: `repeat(${columnas}, 1fr)`}}>
+      <div className='marcador'>Llevas {encontrados} par{encontrados!=1 ? 'es' : ''} </div>
+      <div className="ResizableGrid" style={{gridTemplateColumns: `repeat(${columnas}, 1fr)`}}>
         {cards.map((card) => (
-          <FlippableCard key={card.id} card={card} />
+          <FlippableCard key={card.id+card.front} card={card} back={back} />
         ))}
       </div>
+      {(encontrados === paresTotales) && <div> ¡GANASTE! <button onClick={() => nuevoJuego(paresTotales)}>Nuevo juego</button> </div>}
     </AppContext.Provider>
   )
 }

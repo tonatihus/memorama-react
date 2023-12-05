@@ -1,7 +1,7 @@
 import React from "react";
 import { AppContext } from "./App";
 
-function FlippableCard({ card }) {
+function FlippableCard({ card, back }) {
   const [isFront, setIsFront] = React.useState(false);
   const [unflip, reportClick] = React.useContext(AppContext);
 
@@ -15,15 +15,19 @@ function FlippableCard({ card }) {
 
   return (
     <div className="FlippableCard" onClick={() => {
-      console.log(card.id)
-      if(!card.flippable) return;
-      if(isFront) return;
+      if(!card.flippable) {
+        return;
+      }
+
+      if(isFront){
+        return;
+      }
 
       if(reportClick(card.id, card.front)){
         flip();
       }
     }}>
-      <img src={ isFront ? card.front : card.back} alt="memoCard" style={(!card.flippable) ? {border:'2px solid green'} : {}}/>
+      <img className="card" src={ isFront ? card.front : back} alt="memoCard" style={(!card.flippable) ? {border:'5px solid green'} : {}}/>
     </div>
   );
 }
