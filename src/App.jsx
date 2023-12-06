@@ -13,6 +13,7 @@ function App() {
   const [encontrados, setEncontrados] = useState(0); //Pares encontrados
   const [volteadas, setVolteadas] = useState([]); //Las cartas volteadas en el momento
   const [unflip, setUnflip] = useState(false);
+  const [intentos, setIntentos] = useState(0);
  
   const generaCartas = useCallback((pares) => {
     const newCards = [];
@@ -49,6 +50,7 @@ function App() {
 
   const verificaPar = (array) => {
     if(array.length === 2){
+      setIntentos(intentos+1);
       if(array[0].front === array[1].front){
         setEncontrados(encontrados+1);
         freezeCards([array[0].key, array[1].key]);
@@ -85,21 +87,22 @@ function App() {
     setEncontrados(0);
     setVolteadas([]);
     setCards(generaCartas(pares));
+    setIntentos(0);
   }
 
   return (
     <AppContext.Provider value={[unflip, reportClick]}>
       <div className="sizeSelector">
         <label htmlFor="paresTotales">Memorama de </label>
-        <input id="paresTotales" type="number" min='2' max='16' size='5' value={paresTotales} onChange={(e) => nuevoJuego(e.target.value)} /> pares
+        <input id="paresTotales" type="number" min='2' max='15' size='2' value={paresTotales} onChange={(e) => nuevoJuego(e.target.value)} /> pares
       </div>
-      <div className='marcador'>Llevas {encontrados} par{encontrados!=1 ? 'es' : ''} </div>
+      {paresTotales > 1 && <div className='marcador'>Llevas {intentos} intento{intentos===1 ? '' : 's'} </div>}
       <div className="ResizableGrid" style={{gridTemplateColumns: `repeat(${columnas}, 1fr)`}}>
         {cards.map((card) => (
           <FlippableCard key={card.id+card.front} card={card} back={back} />
         ))}
       </div>
-      {(encontrados === paresTotales) && <div> ¡GANASTE! <button onClick={() => nuevoJuego(paresTotales)}>Nuevo juego</button> </div>}
+      {(encontrados === paresTotales && paresTotales != 0) && <div> ¡GANASTE! <button onClick={() => nuevoJuego(paresTotales)}>Nuevo juego</button> </div>}
     </AppContext.Provider>
   )
 }
