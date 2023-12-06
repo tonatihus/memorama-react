@@ -1,7 +1,6 @@
 import { useState, createContext, useEffect, useCallback } from 'react'
 import './App.css'
 import FlippableCard from "./FlippableCard";
-import back from "../public/back.jpg";
 import {shuffle, randomBetween} from "./utils"
 
 export const AppContext = createContext();
@@ -99,7 +98,7 @@ function App() {
       {paresTotales > 1 && <div className='marcador'>Llevas {intentos} intento{intentos===1 ? '' : 's'} </div>}
       <div className="ResizableGrid" style={{gridTemplateColumns: `repeat(${columnas}, 1fr)`}}>
         {cards.map((card) => (
-          <FlippableCard key={card.id+card.front} card={card} back={back} />
+          <FlippableCard key={card.id+card.front} card={card} back={'back.jpg'} />
         ))}
       </div>
       {(encontrados === paresTotales && paresTotales != 0) && <div> ¡GANASTE! <button onClick={() => nuevoJuego(paresTotales)}>Nuevo juego</button> </div>}
