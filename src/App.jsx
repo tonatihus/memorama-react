@@ -20,7 +20,7 @@ function App() {
     for (let i = 1; i <= (pares * 2); i++) {
       newCards.push({
         id: i,
-        front: `../public/${j}.jpg`,
+        front: `${j}.jpg`,
         flippable: true,
       });
         if (i % 2 === 0) {
